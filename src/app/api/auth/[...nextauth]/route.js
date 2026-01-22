@@ -1,36 +1,53 @@
+import { dbConnect } from "@/lib/dbConnect";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-
-const userList = [
-  { id: "1", username: "hablu", password: "1234" },
-  { id: "2", username: "dablu", password: "4568" },
-];
+import bcript from "bcryptjs";
 
 export const authOption = {
   providers: [
     CredentialsProvider({
       name: "Email & Password",
       credentials: {
-        username: { label: "Username", type: "text" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const { username, password } = credentials;
+        const { email, password } = credentials;
 
-        const user = userList.find((u) => u.username === username);
+        const user = await dbConnect("users").findOne({ email });
         if (!user) return null;
 
-        if (user.password === password) {
-          return {
-            id: user.id,
-            name: user.username,
-          };
+        const isPasswordOK = await bcript.compare(password, user.password);
+
+        if (isPasswordOK) {
+          return user;
         }
 
         return null;
       },
     }),
   ],
+  callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      return true;
+    },
+    async redirect({ url, baseUrl }) {
+      return baseUrl;
+    },
+    async session({ session, token, user }) {
+      if (token) {
+        session.role = token.role;
+      }
+      return session;
+    },
+    async jwt({ token, user, account, profile, isNewUser }) {
+      if (user) {
+        token.email = user.email;
+        token.role = user.role;
+      }
+      return token;
+    },
+  },
 };
 
 const handler = NextAuth(authOption);
