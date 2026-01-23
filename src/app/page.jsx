@@ -2,8 +2,6 @@ import { RiNextjsLine } from "react-icons/ri";
 import { FaReact } from "react-icons/fa";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import { SiMongodb } from "react-icons/si";
-import Link from "next/link";
-import LoginButton from "@/components/LoginButton";
 import UserCard from "@/components/UserCard";
 import { getServerSession } from "next-auth";
 import { authOption } from "./api/auth/[...nextauth]/route";
@@ -12,7 +10,7 @@ import AuthButtons from "@/components/AuthButtons";
 export default async function Home() {
   const session = await getServerSession(authOption);
   return (
-    <div className="min-h-screen relative flex flex-col justify-center items-center gap-5 ">
+    <div className="min-h-screen relative flex flex-col justify-center items-center gap-5">
       <UserCard />
       <div className=" flex gap-5 space-x-4 items-center">
         <FaReact
